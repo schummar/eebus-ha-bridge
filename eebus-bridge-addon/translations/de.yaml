@@ -20,3 +20,10 @@ configuration:
       Seriennummer, die ueber EEBUS angekuendigt wird. Leer lassen, um beim
       ersten Start eine zu erzeugen und dauerhaft zu speichern. Eine Aenderung
       kann ein erneutes Pairing mit der Waermepumpe erzwingen.
+  ohpcf_enabled:
+    name: Verdichter-Flexibilitaet (OHPCF)
+    description: >-
+      Aktiviert den OHPCF-Client fuer die Verdichter-Flexibilitaet.
+      Deaktivieren, wenn ein anderer Energiemanager (z. B. evcc) OHPCF steuern
+      soll - die Waermepumpe vergibt den Use Case an den ersten Client, der ihn
+      belegt. Messwerte und Temperatursteuerung funktionieren weiterhin.

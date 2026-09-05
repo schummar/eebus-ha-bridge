@@ -34,6 +34,7 @@ options:
   brand: Home Assistant
   model: eebus-bridge
   serial: ""
+  ohpcf_enabled: true
 schema:
   grpc_port: port
   eebus_port: port
@@ -42,3 +43,7 @@ schema:
   model: str
   # Optional: run.sh generates and persists one when this is left empty.
   serial: str?
+  # Disable when another energy manager (e.g. evcc) should control the heat
+  # pump's compressor flexibility (OHPCF): the gateway grants that use case to
+  # the first client that claims it.
+  ohpcf_enabled: bool

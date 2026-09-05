@@ -239,7 +239,7 @@ Die Integration nutzt **gRPC Streaming** (Server-Sent Events) fuer Echtzeit-Upda
 | `climate.eebus_room_heating` | climate | Raumheizung mit Ist-/Solltemperatur und `auto`/`on`/`off`; Grenzen und Optionen kommen vom Geraet |
 | `switch.eebus_lpc_active` | switch | Limit aktivieren/deaktivieren |
 | `switch.eebus_dhw_boost` | switch | Warmwasser-Einmalladung aktivieren/deaktivieren |
-| `select.eebus_compressor_flexibility` | select | OHPCF-Verdichter-Flexibilitaet: `on`/`paused`/`off`, nur vorhanden wenn WP ein Angebot meldet |
+| `select.eebus_compressor_flexibility` | select | OHPCF-Verdichter-Flexibilitaet: `on`/`paused`/`off`, nur vorhanden wenn WP ein Angebot meldet; nicht verfuegbar wenn OHPCF in der Bridge deaktiviert ist (s. u.) |
 
 ### Diagnose
 
@@ -421,6 +421,16 @@ automation:
 
 ## Bekannte Einschraenkungen
 
+- **OHPCF nur fuer einen Client -- Koexistenz mit evcc:** Die Waermepumpe
+  vergibt die Verdichter-Flexibilitaet (OHPCF) an den **ersten** Client, der
+  den Use Case belegt. Soll ein anderer Energiemanager (z. B. evcc) OHPCF
+  steuern, den OHPCF-Client der Bridge deaktivieren: in der App/dem Add-on die
+  Option `ohpcf_enabled` ausschalten, bei Docker/Binary `ohpcf.enabled: false`
+  in `config.yaml` setzen oder `EEBUS_OHPCF_ENABLED=false` als
+  Umgebungsvariable exportieren. Die Bridge registriert den Use Case dann gar
+  nicht erst; Messwerte, LPC und Temperatursteuerung (Warmwasser/Heizung)
+  funktionieren weiterhin, nur `select.eebus_compressor_flexibility` und die
+  OHPCF-Diagnosesensoren sind nicht verfuegbar.
 - **HVAC-Steuerung:** Raumheizung wird als `climate.eebus_room_heating` exponiert (Ist-/Solltemperatur, Modi `auto`/`on`/`off`). Kuehlung, Zeitprogramme und ein belastbarer Heizaktivitaetsstatus (`hvac_action`) werden vom VR940 nicht angeboten.
 - **Kein Auto-Discovery in HA:** Die Bridge-Adresse muss manuell eingegeben werden. Die EEBUS-Discovery (mDNS) findet Waermepumpen, aber die Bridge selbst wird nicht von HA entdeckt.
 - **Re-Pairing bei Zertifikatsverlust:** Wird das Bridge-Zertifikat geloescht, aendert sich der SKI. Erneutes Pairing in der myVaillant-App noetig.

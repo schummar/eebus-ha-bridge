@@ -49,11 +49,20 @@ heat pump's app asks for when pairing.
 | `brand` | `Home Assistant` | Brand name; this is what the heat pump's app shows |
 | `model` | `eebus-bridge` | Model name announced over EEBUS |
 | `serial` | *(generated)* | Serial number announced over EEBUS |
+| `ohpcf_enabled` | `true` | Enable the compressor-flexibility (OHPCF) client |
 
 Leaving `serial` empty makes the add-on generate one on first start and keep it
 in `/data`. Changing `serial`, `vendor`, `brand` or `model` later changes the
 announced device identity, and the heat pump may then treat the bridge as a new
 device that has to be paired again.
+
+Disable `ohpcf_enabled` when another energy manager (e.g. evcc) should control
+the heat pump's compressor flexibility: the gateway grants the OHPCF use case
+to the first client that claims it, so a bridge with OHPCF enabled would block
+it for everyone else. With OHPCF disabled the bridge no longer registers that
+use case; the `select.eebus_compressor_flexibility` entity and the OHPCF
+diagnostic sensors become unavailable, while measurements, LPC and temperature
+control keep working. The setting takes effect on the next add-on restart.
 
 ## Persistent data
 

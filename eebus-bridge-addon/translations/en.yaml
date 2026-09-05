@@ -19,3 +19,10 @@ configuration:
     description: >-
       Serial number announced over EEBUS. Leave empty to generate one on first
       start and keep it. Changing it may force re-pairing with the heat pump.
+  ohpcf_enabled:
+    name: Compressor flexibility (OHPCF)
+    description: >-
+      Enable the compressor-flexibility (OHPCF) client. Disable it when another
+      energy manager (e.g. evcc) should control OHPCF - the heat pump grants
+      the use case to the first client that claims it. Measurements and
+      temperature control keep working either way.
