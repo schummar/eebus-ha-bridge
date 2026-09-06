@@ -39,6 +39,7 @@ from .providers import ProviderMappings
 from .runtime import BridgeRuntimeRegistry
 from .server_info import IncompatibleAPIMajorError
 from .ski import is_valid_ski, normalize_ski, short_ski
+from .state import ohpcf_locally_disabled
 
 _LOGGER = logging.getLogger(__name__)
 _RUNTIME_REGISTRY = "runtime_registry"
@@ -199,6 +200,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: EebusConfigEntry) -> boo
 
         _remove_replaced_dhw_entities(hass, coordinator.ski)
         _remove_replaced_heartbeat_switch(hass, coordinator.ski)
+        if ohpcf_locally_disabled(coordinator.data):
+            _remove_ohpcf_entities(hass, coordinator.ski)
 
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -244,6 +247,26 @@ def _remove_replaced_heartbeat_switch(hass: HomeAssistant, ski: str) -> None:
         "switch", DOMAIN, f"{ski}_heartbeat"
     ):
         entity_registry.async_remove(entity_id)
+
+
+def _remove_ohpcf_entities(hass: HomeAssistant, ski: str) -> None:
+    """Remove OHPCF registry entries while the bridge has the use case disabled.
+
+    The platforms stop creating these entities when the bridge reports OHPCF as
+    locally disabled (e.g. because evcc owns compressor flexibility); without
+    this cleanup, entries from an earlier run would linger as permanently
+    unavailable restored entities. They are recreated on the next reload once
+    the bridge re-enables the use case.
+    """
+    entity_registry = er.async_get(hass)
+    for domain, unique_id in (
+        ("select", f"{ski}_compressor_flexibility"),
+        ("sensor", f"{ski}_compressor_flexibility_status"),
+        ("sensor", f"{ski}_compressor_flexibility_power_estimate"),
+        ("sensor", f"{ski}_compressor_flexibility_power_max"),
+    ):
+        if entity_id := entity_registry.async_get_entity_id(domain, DOMAIN, unique_id):
+            entity_registry.async_remove(entity_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: EebusConfigEntry) -> bool:

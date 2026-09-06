@@ -60,9 +60,12 @@ Disable `ohpcf_enabled` when another energy manager (e.g. evcc) should control
 the heat pump's compressor flexibility: the gateway grants the OHPCF use case
 to the first client that claims it, so a bridge with OHPCF enabled would block
 it for everyone else. With OHPCF disabled the bridge no longer registers that
-use case; the `select.eebus_compressor_flexibility` entity and the OHPCF
-diagnostic sensors become unavailable, while measurements, LPC and temperature
-control keep working. The setting takes effect on the next add-on restart.
+use case, and the integration removes the entities that depend on it — the
+`select.eebus_compressor_flexibility` control and the OHPCF diagnostic sensors
+(status, power estimate, power max). Measurements, LPC and temperature control
+keep working. The setting takes effect on the next add-on restart; reload the
+EEBUS integration (or restart Home Assistant) afterwards so the entities are
+removed or recreated.
 
 ## Persistent data
 

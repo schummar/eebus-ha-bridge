@@ -44,6 +44,7 @@ from .models import (
 )
 from .ski import short_ski
 from .state import (
+    REASON_LOCAL_DISABLED,
     CapabilityKey,
     CapabilityResult,
     ConnectionState,
@@ -108,7 +109,7 @@ _CAPABILITY_STATES = {
 }
 _CAPABILITY_REASONS = {
     proto_stubs.CapabilityReason.CAPABILITY_REASON_UNSPECIFIED: None,
-    proto_stubs.CapabilityReason.CAPABILITY_REASON_LOCAL_DISABLED: "local_disabled",
+    proto_stubs.CapabilityReason.CAPABILITY_REASON_LOCAL_DISABLED: REASON_LOCAL_DISABLED,
     proto_stubs.CapabilityReason.CAPABILITY_REASON_REMOTE_NOT_ADVERTISED: "remote_not_advertised",
     proto_stubs.CapabilityReason.CAPABILITY_REASON_ENTITY_NOT_BOUND: "entity_not_bound",
     proto_stubs.CapabilityReason.CAPABILITY_REASON_READ_FAILED: "read_failed",

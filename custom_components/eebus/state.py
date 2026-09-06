@@ -203,6 +203,27 @@ class CapabilityMetadata:
     last_changed: datetime | None
 
 
+# Reason reported by the bridge capability contract when a use case is switched
+# off in the bridge's own configuration (CAPABILITY_REASON_LOCAL_DISABLED).
+REASON_LOCAL_DISABLED = "local_disabled"
+
+
+def ohpcf_locally_disabled(state: DeviceState | None) -> bool:
+    """True when the bridge config has the OHPCF client switched off.
+
+    Distinguishes the deterministic ``ohpcf.enabled: false`` bridge setting from
+    transient unavailability (device disconnected, use case not advertised
+    right now): only the explicit contract's ``local_disabled`` reason counts,
+    so entities are dropped solely for a deliberate operator choice.
+    """
+    if state is None or state.capabilities.ohpcf is not CapabilityState.UNSUPPORTED:
+        return False
+    return any(
+        meta.capability is CapabilityKey.OHPCF and meta.reason == REASON_LOCAL_DISABLED
+        for meta in state.capability_metadata
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class StateObservation:
     """Typed state candidate plus the exact leaves observed by one source."""

@@ -29,7 +29,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .coordinator import EebusCoordinator
 from .entity import EebusEntity
 from .models import CapabilityState
-from .state import DeviceState, StateField, is_fresh
+from .state import DeviceState, StateField, is_fresh, ohpcf_locally_disabled
 
 _OHPCF_STATUS_OPTIONS = [
     "available",
@@ -97,6 +97,16 @@ class EebusMeasurementDescription(SensorEntityDescription):
     available_fn: Callable[[DeviceState], bool] | None = None
     unique_id_suffix: str | None = None
 
+
+# Sensors that only report while the bridge's OHPCF client is enabled; skipped
+# entirely when the bridge reports the use case as locally disabled.
+OHPCF_SENSOR_KEYS = frozenset(
+    {
+        "compressor_flexibility_status",
+        "compressor_flexibility_power_estimate",
+        "compressor_flexibility_power_max",
+    }
+)
 
 # Primary readings plus LPC and OHPCF diagnostics.
 STATE_SENSORS: tuple[EebusMeasurementDescription, ...] = (
@@ -347,9 +357,12 @@ async def async_setup_entry(
 ) -> None:
     """Set up EEBUS sensors."""
     coordinator: EebusCoordinator = entry.runtime_data
-    async_add_entities(
-        EebusMeasurementSensor(coordinator, description) for description in (*STATE_SENSORS, *MEASUREMENT_SENSORS)
-    )
+    descriptions = (*STATE_SENSORS, *MEASUREMENT_SENSORS)
+    if ohpcf_locally_disabled(coordinator.data):
+        # OHPCF is switched off in the bridge config, so its diagnostics can
+        # never report; __init__ removes any registry entries left behind.
+        descriptions = tuple(d for d in descriptions if d.key not in OHPCF_SENSOR_KEYS)
+    async_add_entities(EebusMeasurementSensor(coordinator, description) for description in descriptions)
 
 
 class EebusMeasurementSensor(EebusEntity, SensorEntity):

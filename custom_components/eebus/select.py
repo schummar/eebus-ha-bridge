@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .coordinator import EebusCoordinator
 from .entity import EebusEntity
 from .models import CapabilityState, CompressorFlexibilityState
-from .state import StateField, is_fresh
+from .state import StateField, is_fresh, ohpcf_locally_disabled
 
 PARALLEL_UPDATES = 0  # Coordinator-based, no per-entity polling
 
@@ -38,6 +38,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up EEBUS select entities."""
     coordinator: EebusCoordinator = entry.runtime_data
+    if ohpcf_locally_disabled(coordinator.data):
+        # The bridge config has the OHPCF client switched off (e.g. evcc owns
+        # compressor flexibility), so a control that can never act is not
+        # created at all; __init__ removes any registry entry left behind.
+        return
     entities: list[SelectEntity] = [EebusCompressorFlexibilitySelect(coordinator)]
     async_add_entities(entities)
 

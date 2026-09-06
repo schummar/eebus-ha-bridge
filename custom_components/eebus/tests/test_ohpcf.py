@@ -3,7 +3,7 @@
 import asyncio
 from dataclasses import replace
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import grpc
 import pytest
@@ -19,12 +19,16 @@ from custom_components.eebus.select import EebusCompressorFlexibilitySelect
 from custom_components.eebus.sensor import STATE_SENSORS, EebusMeasurementSensor
 from custom_components.eebus.snapshot import _async_read_compressor_flexibility
 from custom_components.eebus.state import (
+    REASON_LOCAL_DISABLED,
     CapabilitiesState,
+    CapabilityKey,
+    CapabilityMetadata,
     ConnectionState,
     DeviceState,
     DeviceStateStore,
     OHPCFState,
     StateField,
+    ohpcf_locally_disabled,
 )
 
 
@@ -262,3 +266,95 @@ def test_write_status_updates_authoritative_capability(error_status, expected) -
         else:
             asyncio.run(coordinator.async_control_compressor(proto_stubs.OHPCFAction.OHPCF_ACTION_SCHEDULE))
     assert coordinator.data.capabilities.ohpcf == expected
+
+
+def _locally_disabled_state() -> DeviceState:
+    return DeviceState(
+        connection=ConnectionState(connected=True),
+        capabilities=CapabilitiesState(ohpcf=CapabilityState.UNSUPPORTED),
+        capability_metadata=(
+            CapabilityMetadata(CapabilityKey.OHPCF, REASON_LOCAL_DISABLED, None),
+        ),
+    )
+
+
+def test_ohpcf_locally_disabled_requires_explicit_local_reason() -> None:
+    assert ohpcf_locally_disabled(_locally_disabled_state())
+    assert not ohpcf_locally_disabled(None)
+    assert not ohpcf_locally_disabled(DeviceState())
+    # Remote non-advertisement is transient, so the entities must stay.
+    assert not ohpcf_locally_disabled(
+        replace(
+            _locally_disabled_state(),
+            capability_metadata=(
+                CapabilityMetadata(CapabilityKey.OHPCF, "remote_not_advertised", None),
+            ),
+        )
+    )
+    # A legacy bridge without the explicit contract reports no reason.
+    assert not ohpcf_locally_disabled(replace(_locally_disabled_state(), capability_metadata=()))
+
+
+def test_select_setup_skips_entity_when_ohpcf_locally_disabled() -> None:
+    from custom_components.eebus import select as select_platform
+
+    entry = SimpleNamespace(runtime_data=SimpleNamespace(data=_locally_disabled_state()))
+    added = MagicMock()
+    asyncio.run(select_platform.async_setup_entry(None, entry, added))
+    added.assert_not_called()
+
+
+def test_select_setup_creates_entity_when_ohpcf_enabled() -> None:
+    from custom_components.eebus import select as select_platform
+
+    entry = SimpleNamespace(runtime_data=_coordinator(_flex()))
+    added = MagicMock()
+    asyncio.run(select_platform.async_setup_entry(None, entry, added))
+    (entities,) = added.call_args.args
+    assert len(entities) == 1
+    assert isinstance(entities[0], EebusCompressorFlexibilitySelect)
+
+
+def test_sensor_setup_drops_ohpcf_diagnostics_when_locally_disabled() -> None:
+    from custom_components.eebus import sensor as sensor_platform
+
+    coordinator = _coordinator()
+    coordinator.data = _locally_disabled_state()
+    entry = SimpleNamespace(runtime_data=coordinator)
+    added = MagicMock()
+    asyncio.run(sensor_platform.async_setup_entry(None, entry, added))
+    keys = {entity.entity_description.key for entity in added.call_args.args[0]}
+    all_keys = {
+        description.key
+        for description in (*sensor_platform.STATE_SENSORS, *sensor_platform.MEASUREMENT_SENSORS)
+    }
+    assert sensor_platform.OHPCF_SENSOR_KEYS <= all_keys
+    assert keys == all_keys - sensor_platform.OHPCF_SENSOR_KEYS
+
+
+def test_sensor_setup_keeps_ohpcf_diagnostics_when_enabled() -> None:
+    from custom_components.eebus import sensor as sensor_platform
+
+    entry = SimpleNamespace(runtime_data=_coordinator(_flex()))
+    added = MagicMock()
+    asyncio.run(sensor_platform.async_setup_entry(None, entry, added))
+    keys = {entity.entity_description.key for entity in added.call_args.args[0]}
+    assert sensor_platform.OHPCF_SENSOR_KEYS <= keys
+
+
+def test_remove_ohpcf_entities_removes_stale_registry_entries() -> None:
+    from custom_components.eebus import _remove_ohpcf_entities
+
+    entity_registry = MagicMock()
+    entity_registry.async_get_entity_id.side_effect = [
+        "select.eebus_compressor_flexibility",
+        None,
+        "sensor.eebus_compressor_flexibility_power_estimate",
+        None,
+    ]
+    with patch("custom_components.eebus.er.async_get", return_value=entity_registry):
+        _remove_ohpcf_entities(MagicMock(), "test-ski")
+    assert entity_registry.async_remove.call_args_list == [
+        call("select.eebus_compressor_flexibility"),
+        call("sensor.eebus_compressor_flexibility_power_estimate"),
+    ]
