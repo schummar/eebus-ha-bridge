@@ -33,3 +33,7 @@ configuration:
       Protokolliert SHIP/SPINE-Verbindungsdetails (Handshake, Vertrauen,
       Abbrueche) des EEBUS-Stacks. Aktivieren, wenn die Waermepumpe sich nicht
       verbindet.
+  experimental_mgcp_provider:
+    name: "Experimentell: MGCP-Netzsignal"
+    description: >-
+      Stellt den experimentellen MGCP-Grid-Provider bereit, damit die Wärmepumpe die Bilanz am Hausanschluss lesen und ihr eigenes PV-Überschuss-Energiemanagement ausführen kann. Erfordert das Commissioning in der Wärmepumpen-App (siehe README). Standardmäßig aus.

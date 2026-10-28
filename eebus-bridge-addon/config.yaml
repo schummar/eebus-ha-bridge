@@ -4,7 +4,7 @@ name: EEBUS Bridge
 # Dockerfile uses it as the tag of the published bridge image. Bumping it is
 # therefore the single action that both offers users an update and selects the
 # binary they get. scripts/check_addon_version.py enforces the equality.
-version: "0.16.7"
+version: "0.17.0"
 slug: eebus_bridge
 description: >-
   EEBUS SHIP/SPINE bridge for heat pumps. Serves the gRPC API that the EEBUS
@@ -36,6 +36,7 @@ options:
   serial: ""
   ohpcf_enabled: true
   ship_log: false
+  experimental_mgcp_provider: false
 schema:
   grpc_port: port
   eebus_port: port
@@ -49,3 +50,6 @@ schema:
   # the first client that claims it.
   ohpcf_enabled: bool
   ship_log: bool
+  # Optional: exposes the experimental MGCP grid-connection-point provider
+  # (README, "Kooperatives Netzsignal"). Off unless explicitly enabled.
+  experimental_mgcp_provider: bool?

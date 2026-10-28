@@ -31,3 +31,7 @@ configuration:
     description: >-
       Log SHIP/SPINE connection details (handshake, trust, aborts) from the
       EEBUS stack. Enable to diagnose a heat pump that does not connect.
+  experimental_mgcp_provider:
+    name: "Experimental: MGCP grid provider"
+    description: >-
+      Expose the experimental MGCP grid-connection-point provider so the heat pump can read the household balance and run its own PV-surplus energy management. Requires commissioning in the heat pump app (see README). Off by default.

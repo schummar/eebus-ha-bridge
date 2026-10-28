@@ -11,6 +11,9 @@ only what changed in the packaging. Bridge changes are in the
   flexibility (OHPCF).
 - New option `ship_log` (default `false`): logs SHIP/SPINE connection details
   to diagnose a heat pump that does not connect.
+- New option `experimental_mgcp_provider` (default off) exports
+  `EEBUS_EXP_MGCP_PROVIDER` so the experimental MGCP grid provider can be
+  enabled from the add-on configuration.
 
 ## 0.16.2
 

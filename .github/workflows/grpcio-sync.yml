@@ -33,9 +33,9 @@ jobs:
           # steps have completed, immediately before publishing the branch.
           persist-credentials: false
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: "3.14"
+          python-version: "3.15"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.27"
@@ -89,7 +89,7 @@ jobs:
           set -euo pipefail
           # Minimal-diff version bumps (preserve surrounding formatting).
           sed -i -E "s/grpcio>=[0-9.]+/grpcio>=${NEW}/g" custom_components/eebus/manifest.json
-          sed -i -E "s/grpcio>=[0-9.]+/grpcio>=${NEW}/g" .github/workflows/ci.yml
+          sed -i -E "s/grpcio(>=|==)[0-9.]+/grpcio\1${NEW}/g" .github/workflows/ci.yml
           sed -i -E "s/^GRPCIO_TOOLS_VERSION=.*/GRPCIO_TOOLS_VERSION=${NEW}/" proto-tools.env
           # Regenerate stubs with matching grpcio-tools so GRPC_GENERATED_VERSION
           # does not exceed HA's runtime grpcio.
