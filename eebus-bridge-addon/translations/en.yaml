@@ -26,3 +26,8 @@ configuration:
       energy manager (e.g. evcc) should control OHPCF - the heat pump grants
       the use case to the first client that claims it. Measurements and
       temperature control keep working either way.
+  ship_log:
+    name: SHIP protocol log
+    description: >-
+      Log SHIP/SPINE connection details (handshake, trust, aborts) from the
+      EEBUS stack. Enable to diagnose a heat pump that does not connect.

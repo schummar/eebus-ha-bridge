@@ -15,6 +15,7 @@ export EEBUS_VENDOR="$(bashio::config 'vendor')"
 export EEBUS_BRAND="$(bashio::config 'brand')"
 export EEBUS_MODEL="$(bashio::config 'model')"
 export EEBUS_OHPCF_ENABLED="$(bashio::config 'ohpcf_enabled')"
+export EEBUS_SHIP_LOG="$(bashio::config 'ship_log')"
 export EEBUS_CERT_STORAGE="${CERT_STORAGE}"
 
 # The serial is part of the announced EEBUS device identity, so it has to

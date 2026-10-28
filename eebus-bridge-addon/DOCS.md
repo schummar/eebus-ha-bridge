@@ -50,6 +50,7 @@ heat pump's app asks for when pairing.
 | `model` | `eebus-bridge` | Model name announced over EEBUS |
 | `serial` | *(generated)* | Serial number announced over EEBUS |
 | `ohpcf_enabled` | `true` | Enable the compressor-flexibility (OHPCF) client |
+| `ship_log` | `false` | Log SHIP/SPINE connection details for troubleshooting |
 
 Leaving `serial` empty makes the add-on generate one on first start and keep it
 in `/data`. Changing `serial`, `vendor`, `brand` or `model` later changes the

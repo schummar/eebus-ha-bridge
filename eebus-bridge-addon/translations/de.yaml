@@ -27,3 +27,9 @@ configuration:
       Deaktivieren, wenn ein anderer Energiemanager (z. B. evcc) OHPCF steuern
       soll - die Waermepumpe vergibt den Use Case an den ersten Client, der ihn
       belegt. Messwerte und Temperatursteuerung funktionieren weiterhin.
+  ship_log:
+    name: SHIP-Protokoll-Log
+    description: >-
+      Protokolliert SHIP/SPINE-Verbindungsdetails (Handshake, Vertrauen,
+      Abbrueche) des EEBUS-Stacks. Aktivieren, wenn die Waermepumpe sich nicht
+      verbindet.
